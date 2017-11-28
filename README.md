@@ -15,6 +15,6 @@ B返回：SEQ: 7500, ACK: 5001
 B发送FIN消息：SEQ: 7501, ACK: 5001 数据为FIN  
 A返回：SEQ: 5001, ACK: 7502
 ### SEQ与ACK的含义
-SEQ：XXXX 现在传递序号为XXXX的数据包，如果接收无误，请通知我向您传递第XXXX+1号数据包  与
+SEQ：XXXX 现在传递序号为XXXX的数据包，如果接收无误，请通知我向您传递第XXXX+1号数据包  
 ACK：XXXX 刚才传递的XXXX-1号数据包接收无误，现在请传递第XXXX号数据包
 
