@@ -3,6 +3,8 @@ project(tcpip_sample)
 
 set(CMAKE_CXX_STANDARD 11)
 
+INCLUDE_DIRECTORIES(./Utils)
+
 # 01 Echo
-add_executable(echo_server 01_Echo/util.h 01_Echo/echo_server.cpp)
-add_executable(echo_client 01_Echo/util.h 01_Echo/echo_client.cpp)
+add_executable(echo_server 01_Echo/echo_server.cpp)
+add_executable(echo_client 01_Echo/echo_client.cpp)

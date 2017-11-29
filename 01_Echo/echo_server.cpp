@@ -1,11 +1,8 @@
-//
-// Created by huali on 17-11-28.
-//
 
 #include <cstdlib>
 #include "util.h"
 
-const int ROOM_SIZE = 5;
+void handle_client(sock_t client_sock);
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -15,47 +12,44 @@ int main(int argc, char *argv[]) {
 
     STARTUP();
 
-    sock_t serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+    sock_t serv_sock = setup_tcp_server(argv[1]);
     if (serv_sock == INVALID_SOCKET) {
         error_handling("socket() error");
     }
 
-    sockaddr_in serv_addr = {};
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(atoi(argv[1]));
+    while(1) {
+        sock_t client_sock = accept_tcp_connection(serv_sock);
 
-    if (bind(serv_sock, (sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR) {
-        error_handling("bind() error");
-    }
-
-    if (listen(serv_sock, ROOM_SIZE) == -1) {
-        error_handling("listen() error");
-    }
-
-    char buffer[BUF_SIZE];
-    sockaddr_in client_addr = {};
-    socklen_t client_addr_size = sizeof(client_addr);
-
-    for (int i = 0; i < ROOM_SIZE; ++i) {
-        sock_t client_sock = accept(serv_sock, (sockaddr*)&client_addr, &client_addr_size);
-        if (client_sock == INVALID_SOCKET) {
-            error_handling("accept() error");
-        }
-        else {
-            printf("Connected client %d\n", i + 1);
-        }
-
-        int str_len;
-        while ((str_len = recv(client_sock, buffer, BUF_SIZE, 0)) != 0) {
-            printf("received message from client %d: %s", i + 1, buffer);
-            send(client_sock, buffer, str_len, 0);
-        }
-
-        CLOSESOCK(client_sock);
+        handle_client(client_sock);
     }
 
     CLOSESOCK(serv_sock);
     CLEANUP();
     return 0;
+}
+
+void handle_client(sock_t client_sock) {
+    char buffer[BUF_SIZE];
+    // Receive message from client
+    int recv_len = recv(client_sock, buffer, BUF_SIZE, 0);
+    if (recv_len < 0) {
+        error_handling("recv() error");
+    }
+    // Send received message
+    while (recv_len > 0) {
+        int send_len = send(client_sock, buffer, recv_len, 0);
+        if (send_len < 0) {
+            error_handling("send() error");
+        }
+        else if (send_len != recv_len) {
+            error_handling("send unexpected number of bytes");
+        }
+
+        recv_len = recv(client_sock, buffer, BUF_SIZE, 0);
+        if (recv_len < 0) {
+            error_handling("recv() error");
+        }
+    }
+
+    CLOSESOCK(client_sock);
 }

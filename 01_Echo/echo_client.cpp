@@ -1,33 +1,21 @@
-//
-// Created by huali on 17-11-28.
-//
 
 #include <cstdlib>
 #include <cstring>
 #include "util.h"
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("Usage: %s <IP> <port>\n", argv[0]);
+    if (argc < 2) {
+        printf("Usage: %s <IP/name> <port/service>\n", argv[0]);
+        exit(1);
     }
 
 	STARTUP();
 
-    sock_t sock = socket(PF_INET, SOCK_STREAM, 0);
+    const char *server = argv[1];
+    const char *service = (argc == 3) ? argv[2] : "echo";
+    sock_t sock = setup_tcp_client(server, service);
     if (sock == INVALID_SOCKET) {
-        error_handling("socket() error");
-    }
-
-    sockaddr_in serv_addr = {};
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
-    serv_addr.sin_port = htons(atoi(argv[2]));
-
-    if (connect(sock, (sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR) {
-        error_handling("connect() error");
-    }
-    else {
-        puts("Connected......");
+        error_handling("setup_tcp_client() error");
     }
 
     char message[BUF_SIZE];
